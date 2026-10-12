@@ -1,0 +1,36 @@
+id = "devookim.herdr-cast"
+name = "Herdr Cast"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "Spotlight/Raycast-style command palette: jump to agents, workspaces, and tabs, and run plugin actions, custom commands, and keybindings"
+platforms = ["linux", "macos"]
+
+# Go is the only build requirement.
+[[build]]
+command = ["go", "build", "-o", "bin/herdr-cast", "./cmd/herdr-cast"]
+
+# Bind this action to a key with a [[keys.command]] entry of type "plugin_action".
+[[actions]]
+id = "open"
+title = "Herdr Cast: open palette"
+description = "Open the command palette"
+contexts = ["global"]
+command = ["./bin/herdr-cast", "open"]
+
+[[panes]]
+id = "palette"
+title = "Herdr Cast"
+placement = "popup"
+# Default size; width/height in the plugin's config.toml override it.
+width = "80%"
+height = "75%"
+command = ["./bin/herdr-cast", "palette"]
+
+# Runs a [[keys.command]] of type "pane" or "popup" picked in the palette.
+# herdr-cast passes the command in HERDR_CAST_COMMAND and the placement on open;
+# /bin/sh -c matches how Herdr itself runs those commands.
+[[panes]]
+id = "run"
+title = "Herdr Cast command"
+placement = "overlay"
+command = ["/bin/sh", "-c", "exec /bin/sh -c \"$HERDR_CAST_COMMAND\""]
