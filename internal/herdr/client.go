@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sync/atomic"
 	"time"
 )
@@ -73,7 +74,9 @@ func ConfigPath() string {
 
 // Call sends one request and decodes its result into out (which may be nil).
 func (c *Client) Call(method string, params any, out any) error {
-	if params == nil {
+	// A nil map passed as `any` is not == nil and would marshal as null,
+	// which the server rejects for methods taking EmptyParams.
+	if params == nil || isNilMap(params) {
 		params = struct{}{}
 	}
 	conn, err := net.DialTimeout("unix", c.SocketPath, c.Timeout)
@@ -111,4 +114,9 @@ func (c *Client) Call(method string, params any, out any) error {
 		return nil
 	}
 	return json.Unmarshal(resp.Result, out)
+}
+
+func isNilMap(v any) bool {
+	rv := reflect.ValueOf(v)
+	return rv.Kind() == reflect.Map && rv.IsNil()
 }
